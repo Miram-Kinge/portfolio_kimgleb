@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глеб Ким — Project Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #f5f2ec;
+    --accent: #1e6fff;
+    --accent2: #004ecc;
+    --muted: #2a2a2a;
+    --border: rgba(245,242,236,0.12);
+  }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Manrope', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top:0; left:0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s, width 0.2s, height 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    width: 40px; height: 40px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    position: fixed; top:0; left:0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.18s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
+    opacity: 0.5;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 24px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    mix-blend-mode: difference;
+  }
+  .nav-logo {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--white);
+  }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(245,242,236,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(100px, 20vw, 280px);
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(245,242,236,0.05);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    animation: floatBg 8s ease-in-out infinite;
+  }
+  @keyframes floatBg {
+    0%, 100% { transform: translate(-50%, -50%) rotate(-2deg); }
+    50% { transform: translate(-50%, -52%) rotate(2deg); }
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--accent2);
+    color: var(--white);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s 0.2s both;
+  }
+  .hero-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(42px, 7vw, 96px);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.8s 0.4s both;
+  }
+  .hero-title .accent { color: var(--accent); }
+  .hero-title .outline {
+    color: transparent;
+    -webkit-text-stroke: 2px var(--white);
+  }
+  .hero-subtitle {
+    margin-top: 32px;
+    max-width: 500px;
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(245,242,236,0.55);
+    line-height: 1.7;
+    animation: fadeUp 0.8s 0.6s both;
+  }
+  .hero-cta {
+    margin-top: 48px;
+    display: flex; align-items: center; gap: 24px;
+    animation: fadeUp 0.8s 0.8s both;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 16px 28px;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .btn-primary:hover { transform: translate(-3px,-3px); background: #0055ff; }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1.5px solid rgba(245,242,236,0.3);
+    color: var(--white);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 16px 28px;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .scroll-indicator {
+    position: absolute; bottom: 32px; right: 48px;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: fadeUp 0.8s 1.2s both;
+  }
+  .scroll-indicator span {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(245,242,236,0.3);
+    writing-mode: vertical-rl;
+  }
+  .scroll-line {
+    width: 1px; height: 60px;
+    background: rgba(245,242,236,0.2);
+    position: relative; overflow: hidden;
+  }
+  .scroll-line::after {
+    content: '';
+    position: absolute; top: -100%; width: 100%; height: 100%;
+    background: var(--accent);
+    animation: scrollAnim 2s 1.5s infinite;
+  }
+  @keyframes scrollAnim {
+    0% { top: -100%; }
+    100% { top: 200%; }
+  }
+
+  /* SECTIONS */
+  section { padding: 120px 48px; }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 64px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1; max-width: 80px; height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  /* STATS */
+  .stats {
+    background: var(--muted);
+    padding: 64px 48px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .stat {
+    padding: 0 40px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:first-child { padding-left: 0; }
+  .stat:last-child { border-right: none; }
+  .stat-number {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1;
+    color: var(--accent);
+  }
+  .stat-desc {
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(245,242,236,0.45);
+    line-height: 1.5;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .about-big {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 52px);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .about-big .accent { color: var(--accent); }
+  .about-text {
+    font-size: 15px;
+    font-weight: 300;
+    color: rgba(245,242,236,0.6);
+    line-height: 1.9;
+    margin-bottom: 24px;
+  }
+  .skills-list {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 32px;
+  }
+  .skill-tag {
+    border: 1px solid rgba(245,242,236,0.2);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: rgba(245,242,236,0.7);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .skill-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* PROJECTS */
+  .projects-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 64px;
+  }
+  .projects-title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(32px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Project list (editorial style) */
+  .project-item {
+    display: grid;
+    grid-template-columns: 60px 1fr auto;
+    gap: 32px;
+    align-items: center;
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    transition: padding-left 0.3s;
+    cursor: none;
+  }
+  .project-item::before {
+    content: '';
+    position: absolute; left: -48px; right: -48px; top: 0; bottom: 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+    z-index: -1;
+  }
+  .project-item:hover::before { transform: scaleX(1); }
+  .project-item:hover { padding-left: 16px; }
+  .project-item:hover .proj-num { color: var(--black); }
+  .project-item:hover .proj-name { color: var(--black); }
+  .project-item:hover .proj-tags span { border-color: rgba(0,0,0,0.2); color: var(--black); }
+  .project-item:hover .proj-arrow { color: var(--black); }
+
+  .proj-num {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    color: rgba(245,242,236,0.25);
+    transition: color 0.3s;
+  }
+  .proj-name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: clamp(18px, 2.5vw, 28px);
+    transition: color 0.3s;
+  }
+  .proj-meta {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .proj-desc {
+    font-size: 13px;
+    color: rgba(245,242,236,0.4);
+    transition: color 0.3s;
+  }
+  .project-item:hover .proj-desc { color: rgba(0,0,0,0.5); }
+  .proj-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .proj-tags span {
+    border: 1px solid rgba(245,242,236,0.15);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    color: rgba(245,242,236,0.45);
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .proj-arrow {
+    font-size: 24px;
+    transition: color 0.3s, transform 0.3s;
+    color: rgba(245,242,236,0.2);
+  }
+  .project-item:hover .proj-arrow { transform: translate(6px, -6px); }
+
+  /* EVENT section */
+  .event-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 48px;
+  }
+  .event-card {
+    background: var(--muted);
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+  .event-card:hover { background: #1a1a1a; }
+  .event-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0;
+    height: 3px; width: 0;
+    background: var(--accent);
+    transition: width 0.4s;
+  }
+  .event-card:hover::after { width: 100%; }
+  .event-name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .event-result {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(28px, 3vw, 40px);
+    color: var(--accent);
+    line-height: 1;
+    margin: 16px 0 8px;
+  }
+  .event-desc {
+    font-size: 13px;
+    color: rgba(245,242,236,0.45);
+    line-height: 1.6;
+  }
+
+  /* CONTACT */
+  .contact-section {
+    background: var(--accent);
+    color: var(--black);
+    text-align: center;
+    padding: 120px 48px;
+  }
+  .contact-big {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(36px, 7vw, 96px);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .contact-big .outline-black {
+    color: transparent;
+    -webkit-text-stroke: 3px #fff;
+  }
+  .contact-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 48px;
+  }
+  .contact-links {
+    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+  }
+  .contact-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff;
+    color: #1e6fff;
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 24px;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+  .contact-link:hover { transform: translate(-3px,-3px); }
+  .contact-detail {
+    margin-top: 48px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+  }
+  .contact-detail a { color: #fff; text-decoration: none; }
+
+  /* FOOTER */
+  footer {
+    padding: 32px 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  footer p { font-size: 12px; color: rgba(245,242,236,0.2); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s cubic-bezier(0.23,1,0.32,1), transform 0.8s cubic-bezier(0.23,1,0.32,1);
+  }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    .hero { padding: 0 24px 60px; }
+    .stats { padding: 48px 24px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+    .stat { border-right: none; padding: 0; }
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .event-grid { grid-template-columns: 1fr; }
+    .project-item { grid-template-columns: 40px 1fr; }
+    .proj-arrow { display: none; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+
+<nav>
+  <div class="nav-logo">ГЛЕБ КИМ</div>
+  <div class="nav-links">
+    <a href="#about">О себе</a>
+    <a href="#projects">Проекты</a>
+    <a href="#events">Events</a>
+    <a href="#contact">Контакт</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-text">PM</div>
+  <div class="hero-tag">Project Manager · Digital · Event · IT</div>
+  <h1 class="hero-title">
+    Глеб<br>
+    <span class="outline">Мирам</span><br>
+    <span class="accent">Ким</span>
+  </h1>
+  <p class="hero-subtitle">
+    Проектный менеджер с опытом в IT, Digital и Event.<br>
+    Локальные, всероссийские, международные проекты.
+  </p>
+  <div class="hero-cta">
+    <a href="#projects" class="btn-primary">Смотреть проекты →</a>
+    <a href="#contact" class="btn-outline">Связаться</a>
+  </div>
+  <div class="scroll-indicator">
+    <div class="scroll-line"></div>
+    <span>Скролл</span>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-grid">
+    <div class="stat reveal">
+      <div class="stat-number">30+</div>
+      <div class="stat-desc">человек в команде<br>на пике</div>
+    </div>
+    <div class="stat reveal" style="transition-delay:0.1s">
+      <div class="stat-number">560</div>
+      <div class="stat-desc">волонтёров обучено<br>на Bridge of Arts</div>
+    </div>
+    <div class="stat reveal" style="transition-delay:0.2s">
+      <div class="stat-number">60+</div>
+      <div class="stat-desc">открытых магазинов<br>Тавр</div>
+    </div>
+    <div class="stat reveal" style="transition-delay:0.3s">
+      <div class="stat-number">5М+</div>
+      <div class="stat-desc">рублей сэкономлено<br>на персонале</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">О себе</div>
+  <div class="about-grid">
+    <div class="about-big reveal">
+      Управляю проектами.<br>
+      <span class="accent">Делаю</span> результаты,<br>
+      а не процессы.
+    </div>
+    <div>
+      <p class="about-text reveal">
+        Профильное образование + реальный опыт в IT, Digital и Event. Работал с локальными, всероссийскими и международными проектами в разных регионах страны.
+      </p>
+      <p class="about-text reveal" style="transition-delay:0.1s">
+        Основное — проектная и операционная работа, формирование стратегий и концепций, аналитика и управление кросс-функциональными командами от 5 до 30 человек.
+      </p>
+      <div class="skills-list reveal" style="transition-delay:0.2s">
+        <span class="skill-tag">Project Management</span>
+        <span class="skill-tag">Digital-маркетинг</span>
+        <span class="skill-tag">Event-продакшн</span>
+        <span class="skill-tag">SMM-стратегия</span>
+        <span class="skill-tag">KPI-аналитика</span>
+        <span class="skill-tag">Кросс-функциональные команды</span>
+        <span class="skill-tag">Контентное производство</span>
+        <span class="skill-tag">Таргетированная реклама</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" style="padding-top:0;">
+  <div class="projects-header reveal">
+    <div class="projects-title">Портфолио<br><span style="color:var(--accent)">проектов</span></div>
+  </div>
+
+  <div class="project-item reveal">
+    <div class="proj-num">01</div>
+    <div class="proj-meta">
+      <div class="proj-name">VK Гид</div>
+      <div class="proj-desc">Mini App для культурных институций</div>
+      <div class="proj-tags">
+        <span>IT</span><span>VK Mini App</span><span>Продакт-менеджмент</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+
+  <div class="project-item reveal" style="transition-delay:0.05s">
+    <div class="proj-num">02</div>
+    <div class="proj-meta">
+      <div class="proj-name">Никита Тау</div>
+      <div class="proj-desc">Концепция культурного инфлюенсера</div>
+      <div class="proj-tags">
+        <span>Digital</span><span>SMM</span><span>Контент-стратегия</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+
+  <div class="project-item reveal" style="transition-delay:0.1s">
+    <div class="proj-num">03</div>
+    <div class="proj-meta">
+      <div class="proj-name">GreenMe+ Protect</div>
+      <div class="proj-desc">+23% основных показателей за 3 месяца</div>
+      <div class="proj-tags">
+        <span>FMCG</span><span>Instagram</span><span>SMM</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+
+  <div class="project-item reveal" style="transition-delay:0.15s">
+    <div class="proj-num">04</div>
+    <div class="proj-meta">
+      <div class="proj-name">Laimon Fresh</div>
+      <div class="proj-desc">+19% показателей, IG + ВКонтакте</div>
+      <div class="proj-tags">
+        <span>FMCG</span><span>Контент</span><span>Съёмки</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+
+  <div class="project-item reveal" style="transition-delay:0.2s">
+    <div class="proj-num">05</div>
+    <div class="proj-meta">
+      <div class="proj-name">Сиббиттер</div>
+      <div class="proj-desc">KPI выполнены на 15 дней раньше дедлайна</div>
+      <div class="proj-tags">
+        <span>Алкоголь</span><span>Активация</span><span>Таргет</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+
+  <div class="project-item reveal" style="transition-delay:0.25s">
+    <div class="proj-num">06</div>
+    <div class="proj-meta">
+      <div class="proj-name">Delivery Club × Jägermeister × AliExpress</div>
+      <div class="proj-desc">Контент для соцсетей и спецпроекты</div>
+      <div class="proj-tags">
+        <span>Спецпроекты</span><span>Forbes</span><span>Продакшн</span>
+      </div>
+    </div>
+    <div class="proj-arrow">↗</div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section id="events" style="padding-top:0;">
+  <div class="section-label reveal">Event-опыт</div>
+  <div class="event-grid">
+    <div class="event-card reveal">
+      <div class="event-name">Bridge of Arts</div>
+      <div class="event-result">560</div>
+      <div class="event-desc">волонтёров обучено и подготовлено. 42 тим-лидера, 10 руководителей. Экономия &gt;5 млн ₽ на персонале</div>
+    </div>
+    <div class="event-card reveal" style="transition-delay:0.1s">
+      <div class="event-name">Тавр</div>
+      <div class="event-result">+150%</div>
+      <div class="event-desc">к продажам в день открытия. Более 60 открытий магазинов с тематическими мероприятиями</div>
+    </div>
+    <div class="event-card reveal" style="transition-delay:0.2s">
+      <div class="event-name">Дон Фест</div>
+      <div class="event-result">10K+</div>
+      <div class="event-desc">человек в сутки. POS-координация на 3 площадках с пиковой проходимостью 50 чел/час</div>
+    </div>
+    <div class="event-card reveal" style="transition-delay:0.3s">
+      <div class="event-name">Volkswagen</div>
+      <div class="event-result">★</div>
+      <div class="event-desc">Крупнейший тест-драйв в Ростове-на-Дону. Застройка, персонал, логистика гостей</div>
+    </div>
+    <div class="event-card reveal" style="transition-delay:0.4s">
+      <div class="event-name">Reebok «Стань человеком»</div>
+      <div class="event-result">7 км</div>
+      <div class="event-desc">застройка трассы. Вдвое сократил время реагирования медслужб через волонтёров</div>
+    </div>
+    <div class="event-card reveal" style="transition-delay:0.5s">
+      <div class="event-name">Майор Гром</div>
+      <div class="event-result">→</div>
+      <div class="event-desc">Ситуационное пост-промо под ключ. Быстрый запуск, контентное сопровождение</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-big reveal">
+    Давайте<br><span class="outline-black">работать</span><br>вместе
+  </div>
+  <p class="contact-sub reveal">Открыт к новым проектам и предложениям</p>
+  <div class="contact-links reveal">
+    <a href="https://t.me/Miramkinge" class="contact-link">Telegram →</a>
+    <a href="https://www.instagram.com/miram_kinge/" class="contact-link">Instagram →</a>
+    <a href="https://hh.ru/resume/afd9bec9ff07616ecb0039ed1f73443631354e" class="contact-link">hh.ru →</a>
+    <a href="https://www.linkedin.com/in/miramkinge/" class="contact-link">LinkedIn →</a>
+  </div>
+  <div class="contact-detail reveal">
+    <a href="tel:+79604609153">8 (960) 460-91-53</a>&nbsp;&nbsp;·&nbsp;&nbsp;
+    <a href="mailto:kimgleb3@gmail.com">kimgleb3@gmail.com</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 Глеб Мирам Ким</p>
+  <p>Project Manager · IT · Digital · Event</p>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const trail = document.getElementById('cursorTrail');
+  let mx = 0, my = 0, tx = 0, ty = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+  });
+  function animTrail() {
+    tx += (mx - tx) * 0.12;
+    ty += (my - ty) * 0.12;
+    trail.style.transform = `translate(${tx - 20}px, ${ty - 20}px)`;
+    requestAnimationFrame(animTrail);
+  }
+  animTrail();
+
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => io.observe(el));
+</script>
+</body>
+</html>
